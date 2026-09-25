@@ -1,18 +1,37 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, X, RefreshCw, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AdminLayout } from "../components/layouts/AdminLayout";
-import { Badge, Button, Card, Input } from "../components/ui-kit";
-import { bookings } from "../data/dummy";
+import { Badge, Card, Input } from "../components/ui-kit";
+import { api, CURRENCY, type BookingDto } from "../lib/api";
 
 export const Route = createFileRoute("/admin/bookings")({
   head: () => ({ meta: [{ title: "Bookings · Admin · ParkPilot" }, { name: "description", content: "Approve, cancel and refund bookings." }] }),
   component: AdminBookings,
 });
 
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "2-digit", day: "2-digit" });
+}
+function fmtTime(iso: string) {
+  return new Date(iso).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+const badgeVariant = (s: BookingDto["status"]) =>
+  s === "COMPLETED" ? "success" : s === "CANCELLED" ? "danger" : s === "ACTIVE" ? "info" : "warning";
+
 function AdminBookings() {
+  const [q, setQ] = useState("");
+  const { data: bookings = [], isLoading } = useQuery({ queryKey: ["admin-bookings"], queryFn: api.adminBookings });
+
+  const list = useMemo(
+    () => bookings.filter((b) => (b.lotName + b.reference).toLowerCase().includes(q.toLowerCase())),
+    [bookings, q],
+  );
+
   return (
     <AdminLayout title="Bookings">
-      <div className="mb-4"><Input icon={<Search className="h-4 w-4" />} placeholder="Search by booking ID, user, or lot..." /></div>
+      <div className="mb-4"><Input icon={<Search className="h-4 w-4" />} placeholder="Search by booking ID or lot..." value={q} onChange={(e) => setQ(e.target.value)} /></div>
       <Card className="!p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -24,45 +43,26 @@ function AdminBookings() {
                 <th className="px-4 py-3 text-left">Date & Time</th>
                 <th className="px-4 py-3 text-left">Amount</th>
                 <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {[...bookings, ...bookings].map((b, i) => (
-                <tr key={i} className="border-t border-border">
-                  <td className="px-4 py-3 font-medium">{b.id}</td>
-                  <td className="px-4 py-3">{b.lot}</td>
-                  <td className="px-4 py-3">{b.slot}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{b.date} · {b.time}</td>
-                  <td className="px-4 py-3 font-semibold">${b.amount}</td>
-                  <td className="px-4 py-3"><Badge variant={b.status === "Completed" ? "success" : "danger"}>{b.status}</Badge></td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end gap-1">
-                      <Button size="sm" variant="ghost" className="text-[color:var(--color-success)]"><Check className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="ghost" className="text-destructive"><X className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="ghost"><RefreshCw className="h-4 w-4" /></Button>
-                    </div>
-                  </td>
+              {list.map((b) => (
+                <tr key={b.id} className="border-t border-border">
+                  <td className="px-4 py-3 font-medium">{b.reference}</td>
+                  <td className="px-4 py-3">{b.lotName}</td>
+                  <td className="px-4 py-3">{b.slotCode}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{fmtDate(b.startTime)} · {fmtTime(b.startTime)} – {fmtTime(b.endTime)}</td>
+                  <td className="px-4 py-3 font-semibold">{CURRENCY}{b.amount}</td>
+                  <td className="px-4 py-3"><Badge variant={badgeVariant(b.status)}>{b.status}</Badge></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <Pagination />
+        {isLoading && <p className="p-4 text-sm text-muted-foreground">Loading…</p>}
+        {!isLoading && list.length === 0 && <p className="p-6 text-center text-sm text-muted-foreground">No bookings found.</p>}
+        <div className="border-t border-border p-3 text-sm text-muted-foreground">Showing {list.length} bookings</div>
       </Card>
     </AdminLayout>
-  );
-}
-
-function Pagination() {
-  return (
-    <div className="flex items-center justify-between border-t border-border p-3 text-sm">
-      <p className="text-muted-foreground">Showing 1–8 of 48</p>
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((p) => (
-          <button key={p} className={`h-8 w-8 rounded-lg text-xs font-medium ${p === 1 ? "gradient-primary text-primary-foreground" : "hover:bg-accent"}`}>{p}</button>
-        ))}
-      </div>
-    </div>
   );
 }

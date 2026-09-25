@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Search, CalendarDays, User, Moon, Sun, Bell, Car } from "lucide-react";
 import type { ReactNode } from "react";
 import { useApp } from "../../context/AppContext";
+import { Avatar } from "../ui-kit";
 
 const nav = [
   { to: "/dashboard", label: "Home", icon: Home },
@@ -49,7 +50,7 @@ export function UserLayout({ children, title }: { children: ReactNode; title?: s
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary" />
             </button>
             {user && (
-              <img src={user.avatar} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-primary/20" />
+              <Avatar src={user.avatar || undefined} name={user.name} size={36} />
             )}
           </div>
         </div>

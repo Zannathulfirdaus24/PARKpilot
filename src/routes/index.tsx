@@ -36,7 +36,6 @@ function Splash() {
         </motion.p>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }} className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
           <Link to="/login"><Button size="lg" className="min-w-[180px]">Get Started</Button></Link>
-          <Link to="/admin/login"><Button variant="outline" size="lg">Admin Login</Button></Link>
         </motion.div>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="mt-16 grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3">
           {[

@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { FileDown, FileSpreadsheet } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AdminLayout } from "../components/layouts/AdminLayout";
 import { Button, Card } from "../components/ui-kit";
-import { revenueSeries } from "../data/dummy";
+import { api, CURRENCY } from "../lib/api";
 
 export const Route = createFileRoute("/admin/reports")({
   head: () => ({ meta: [{ title: "Reports · Admin · ParkPilot" }, { name: "description", content: "Generate daily, weekly and monthly reports." }] }),
@@ -13,6 +14,19 @@ export const Route = createFileRoute("/admin/reports")({
 
 function AdminReports() {
   const [range, setRange] = useState<"Daily" | "Weekly" | "Monthly">("Weekly");
+  const { data } = useQuery({ queryKey: ["admin-dashboard"], queryFn: api.adminDashboard });
+  const revenueSeries = data?.revenueSeries ?? [];
+
+  // Derive KPIs from the live series.
+  const kpis = useMemo(() => {
+    if (!revenueSeries.length) return null;
+    const peak = revenueSeries.reduce((a, b) => (b.revenue > a.revenue ? b : a));
+    const bestLot = data?.occupancyByLot?.length
+      ? data.occupancyByLot.reduce((a, b) => (b.value > a.value ? b : a))
+      : null;
+    return { peak, bestLot };
+  }, [revenueSeries, data]);
+
   return (
     <AdminLayout title="Reports">
       <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -40,17 +54,21 @@ function AdminReports() {
         </div>
       </Card>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
-        {[
-          { label: "Peak Day", value: "Saturday", detail: "$5,100 in revenue" },
-          { label: "Best Lot", value: "Downtown Central", detail: "78% occupancy" },
-          { label: "Avg. Session", value: "2h 14m", detail: "Across all lots" },
-        ].map((k) => (
-          <Card key={k.label}>
-            <p className="text-xs text-muted-foreground">{k.label}</p>
-            <p className="mt-1 text-lg font-bold">{k.value}</p>
-            <p className="text-xs text-muted-foreground">{k.detail}</p>
-          </Card>
-        ))}
+        <Card>
+          <p className="text-xs text-muted-foreground">Peak Day</p>
+          <p className="mt-1 text-lg font-bold">{kpis?.peak?.name ?? "—"}</p>
+          <p className="text-xs text-muted-foreground">{CURRENCY}{kpis?.peak?.revenue ?? 0} in revenue</p>
+        </Card>
+        <Card>
+          <p className="text-xs text-muted-foreground">Best Lot</p>
+          <p className="mt-1 text-lg font-bold">{kpis?.bestLot?.name ?? "—"}</p>
+          <p className="text-xs text-muted-foreground">{kpis?.bestLot?.value ?? 0}% occupancy</p>
+        </Card>
+        <Card>
+          <p className="text-xs text-muted-foreground">Total Bookings</p>
+          <p className="mt-1 text-lg font-bold">{data?.totalBookings ?? 0}</p>
+          <p className="text-xs text-muted-foreground">Across all lots</p>
+        </Card>
       </div>
     </AdminLayout>
   );

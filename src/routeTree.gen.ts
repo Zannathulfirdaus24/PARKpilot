@@ -14,7 +14,6 @@ import { Route as BookingsRouteImport } from './routes/bookings'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ForgotRouteImport } from './routes/forgot'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as OtpRouteImport } from './routes/otp'
 import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as PenaltyRouteImport } from './routes/penalty'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -58,11 +57,6 @@ const ForgotRoute = ForgotRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OtpRoute = OtpRouteImport.update({
-  id: '/otp',
-  path: '/otp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PaymentRoute = PaymentRouteImport.update({
@@ -167,7 +161,6 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/forgot': typeof ForgotRoute
   '/login': typeof LoginRoute
-  '/otp': typeof OtpRoute
   '/payment': typeof PaymentRoute
   '/penalty': typeof PenaltyRoute
   '/profile': typeof ProfileRoute
@@ -194,7 +187,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/forgot': typeof ForgotRoute
   '/login': typeof LoginRoute
-  '/otp': typeof OtpRoute
   '/payment': typeof PaymentRoute
   '/penalty': typeof PenaltyRoute
   '/profile': typeof ProfileRoute
@@ -222,7 +214,6 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/forgot': typeof ForgotRoute
   '/login': typeof LoginRoute
-  '/otp': typeof OtpRoute
   '/payment': typeof PaymentRoute
   '/penalty': typeof PenaltyRoute
   '/profile': typeof ProfileRoute
@@ -251,7 +242,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/forgot'
     | '/login'
-    | '/otp'
     | '/payment'
     | '/penalty'
     | '/profile'
@@ -278,7 +268,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/forgot'
     | '/login'
-    | '/otp'
     | '/payment'
     | '/penalty'
     | '/profile'
@@ -305,7 +294,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/forgot'
     | '/login'
-    | '/otp'
     | '/payment'
     | '/penalty'
     | '/profile'
@@ -333,7 +321,6 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   ForgotRoute: typeof ForgotRoute
   LoginRoute: typeof LoginRoute
-  OtpRoute: typeof OtpRoute
   PaymentRoute: typeof PaymentRoute
   PenaltyRoute: typeof PenaltyRoute
   ProfileRoute: typeof ProfileRoute
@@ -390,13 +377,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/otp': {
-      id: '/otp'
-      path: '/otp'
-      fullPath: '/otp'
-      preLoaderRoute: typeof OtpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payment': {
@@ -541,7 +521,6 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   ForgotRoute: ForgotRoute,
   LoginRoute: LoginRoute,
-  OtpRoute: OtpRoute,
   PaymentRoute: PaymentRoute,
   PenaltyRoute: PenaltyRoute,
   ProfileRoute: ProfileRoute,

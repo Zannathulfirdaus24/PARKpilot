@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { Star, MapPin, Clock, Camera, Umbrella, Zap, Shield, ChevronLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { UserLayout } from "../components/layouts/UserLayout";
 import { Badge, Button, Card } from "../components/ui-kit";
-import { parkingLots } from "../data/dummy";
+import { api, CURRENCY, type ParkingLot } from "../lib/api";
 import { useApp } from "../context/AppContext";
 
 export const Route = createFileRoute("/parking/$id")({
@@ -10,10 +11,21 @@ export const Route = createFileRoute("/parking/$id")({
   component: ParkingDetails,
 });
 
+const statusLabel: Record<ParkingLot["status"], string> = {
+  OPEN: "Open", FILLING_FAST: "Filling Fast", FULL: "Full", CLOSED: "Closed",
+};
+
 function ParkingDetails() {
   const { id } = useParams({ from: "/parking/$id" });
-  const p = parkingLots.find((x) => x.id === id) ?? parkingLots[0];
   const { setDraft } = useApp();
+
+  const { data: p, isLoading, error } = useQuery({
+    queryKey: ["lot", id],
+    queryFn: () => api.getLot(id),
+  });
+
+  if (isLoading) return <UserLayout><p className="text-sm text-muted-foreground">Loading…</p></UserLayout>;
+  if (error || !p) return <UserLayout><p className="text-sm text-red-500">Couldn't load this parking lot.</p></UserLayout>;
 
   const amenities = [
     { icon: Camera, label: "CCTV", on: p.amenities.cctv },
@@ -30,20 +42,20 @@ function ParkingDetails() {
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div>
           <div className="overflow-hidden rounded-2xl">
-            <img src={p.image} alt={p.name} className="h-64 w-full object-cover sm:h-80" />
+            <img src={p.imageUrl} alt={p.name} className="h-64 w-full object-cover sm:h-80" />
           </div>
           <div className="mt-5 flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <h1 className="text-2xl font-bold tracking-tight">{p.name}</h1>
               <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground"><MapPin className="h-4 w-4" />{p.address}</p>
             </div>
-            <Badge variant={p.status === "Full" ? "danger" : "success"}>{p.status}</Badge>
+            <Badge variant={p.status === "FULL" ? "danger" : p.status === "FILLING_FAST" ? "warning" : "success"}>{statusLabel[p.status]}</Badge>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
             <div className="rounded-xl bg-secondary p-3">
               <p className="text-xs text-muted-foreground">Rating</p>
-              <p className="mt-1 flex items-center gap-1 font-semibold"><Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />{p.rating} <span className="text-xs font-normal text-muted-foreground">({p.reviews})</span></p>
+              <p className="mt-1 flex items-center gap-1 font-semibold"><Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />{p.rating} <span className="text-xs font-normal text-muted-foreground">({p.reviewsCount})</span></p>
             </div>
             <div className="rounded-xl bg-secondary p-3">
               <p className="text-xs text-muted-foreground">Hours</p>
@@ -51,11 +63,7 @@ function ParkingDetails() {
             </div>
             <div className="rounded-xl bg-secondary p-3">
               <p className="text-xs text-muted-foreground">Available</p>
-              <p className="mt-1 font-semibold">{p.available}/{p.total}</p>
-            </div>
-            <div className="rounded-xl bg-secondary p-3">
-              <p className="text-xs text-muted-foreground">Distance</p>
-              <p className="mt-1 font-semibold">{p.distance}</p>
+              <p className="mt-1 font-semibold">{p.availableSlots}/{p.totalSlots}</p>
             </div>
           </div>
 
@@ -77,17 +85,17 @@ function ParkingDetails() {
 
         <Card className="h-fit lg:sticky lg:top-24">
           <p className="text-sm text-muted-foreground">From</p>
-          <p className="text-3xl font-bold text-primary">${p.price}<span className="text-sm font-normal text-muted-foreground">/hour</span></p>
+          <p className="text-3xl font-bold text-primary">{CURRENCY}{p.pricePerHour}<span className="text-sm font-normal text-muted-foreground">/hour</span></p>
           <div className="mt-4 space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Opening hours</span><span className="font-medium">{p.hours}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Available slots</span><span className="font-medium">{p.available}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Available slots</span><span className="font-medium">{p.availableSlots}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Rating</span><span className="font-medium">{p.rating} ★</span></div>
           </div>
           <Link to="/slots/$id" params={{ id: p.id }}>
             <Button
               className="mt-5 w-full"
-              disabled={p.available === 0}
-              onClick={() => setDraft({ lotId: p.id, lotName: p.name, price: p.price })}
+              disabled={p.availableSlots === 0}
+              onClick={() => setDraft({ lotId: p.id, lotName: p.name, price: p.pricePerHour })}
             >
               Choose Slot
             </Button>

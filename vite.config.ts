@@ -12,4 +12,11 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Run the frontend dev server on 5173 so it doesn't clash with the
+  // Spring Boot backend on 8080 (backend CORS already allows 5173).
+  vite: {
+    server: {
+      port: 5173,
+    },
+  },
 });

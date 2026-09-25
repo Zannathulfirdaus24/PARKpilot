@@ -11,9 +11,22 @@ export const Route = createFileRoute("/success")({
   component: SuccessPage,
 });
 
+function fmtDate(iso?: string) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+function fmtTime(iso?: string) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+}
+
 function SuccessPage() {
   const { draft } = useApp();
-  const id = "BK-10250";
+  const id = draft.reference ?? "BK-—";
+  const timeRange = draft.startTime && draft.endTime
+    ? `${fmtTime(draft.startTime)} – ${fmtTime(draft.endTime)}`
+    : "—";
+
   return (
     <UserLayout>
       <div className="mx-auto max-w-lg">
@@ -34,10 +47,10 @@ function SuccessPage() {
           </div>
           <div className="space-y-3 p-6">
             <div className="flex justify-between text-sm"><span className="text-muted-foreground">Booking ID</span><span className="font-semibold">{id}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Location</span><span className="font-semibold">{draft.lotName ?? "Downtown Central"}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Slot</span><span className="font-semibold">{draft.slot ?? "A-14"}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Date</span><span className="font-semibold">Jul 26, 2026</span></div>
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Time</span><span className="font-semibold">3:00 PM – 5:00 PM</span></div>
+            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Location</span><span className="font-semibold">{draft.lotName ?? "—"}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Slot</span><span className="font-semibold">{draft.slot ?? "—"}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Date</span><span className="font-semibold">{fmtDate(draft.startTime)}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Time</span><span className="font-semibold">{timeRange}</span></div>
           </div>
         </Card>
 

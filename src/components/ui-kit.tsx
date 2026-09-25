@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, Eye, EyeOff } from "lucide-react";
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function Button({
   children,
@@ -37,19 +37,35 @@ export function Input({
   label,
   icon,
   className = "",
+  type,
   ...rest
 }: InputHTMLAttributes<HTMLInputElement> & { label?: string; icon?: ReactNode }) {
+  const isPassword = type === "password";
+  const [show, setShow] = useState(false);
+  const inputType = isPassword ? (show ? "text" : "password") : type;
+
   return (
     <label className="block">
       {label && <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</span>}
       <div className="relative">
         {icon && <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{icon}</span>}
         <input
+          type={inputType}
           className={`h-11 w-full rounded-xl border border-border bg-card px-4 text-sm outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/15 ${
             icon ? "pl-10" : ""
-          } ${className}`}
+          } ${isPassword ? "pr-10" : ""} ${className}`}
           {...rest}
         />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShow((s) => !s)}
+            aria-label={show ? "Hide password" : "Show password"}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        )}
       </div>
     </label>
   );
@@ -151,6 +167,46 @@ export function EmptyState({ title, hint }: { title: string; hint?: string }) {
     <div className="grid place-items-center rounded-xl border border-dashed border-border p-10 text-center">
       <p className="font-medium">{title}</p>
       {hint && <p className="mt-1 text-sm text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}
+
+
+export function Avatar({
+  src,
+  name,
+  size = 36,
+  className = "",
+}: {
+  src?: string;
+  name?: string;
+  size?: number;
+  className?: string;
+}) {
+  const initials = (name ?? "")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("") || "?";
+
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt={name ?? ""}
+        style={{ height: size, width: size }}
+        className={`rounded-full object-cover ring-2 ring-primary/20 ${className}`}
+      />
+    );
+  }
+  return (
+    <div
+      style={{ height: size, width: size, fontSize: size * 0.4 }}
+      className={`grid place-items-center rounded-full gradient-primary font-bold text-primary-foreground ring-2 ring-primary/20 ${className}`}
+      aria-label={name ?? "User"}
+    >
+      {initials}
     </div>
   );
 }

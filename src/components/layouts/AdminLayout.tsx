@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useApp } from "../../context/AppContext";
+import { Avatar } from "../ui-kit";
 
 const nav = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -32,7 +33,7 @@ const nav = [
 
 export function AdminLayout({ children, title }: { children: ReactNode; title: string }) {
   const [open, setOpen] = useState(false);
-  const { theme, toggleTheme } = useApp();
+  const { theme, toggleTheme, user } = useApp();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   const NavList = () => (
@@ -100,7 +101,7 @@ export function AdminLayout({ children, title }: { children: ReactNode; title: s
             <button onClick={toggleTheme} className="grid h-10 w-10 place-items-center rounded-xl hover:bg-accent">
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
-            <img src="https://i.pravatar.cc/80?img=12" className="h-9 w-9 rounded-full ring-2 ring-primary/20" alt="" />
+            <Avatar src={user?.avatar || undefined} name={user?.name ?? "Admin"} size={36} />
           </div>
         </header>
         <main className="p-4 md:p-6">{children}</main>

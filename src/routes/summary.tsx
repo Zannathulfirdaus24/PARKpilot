@@ -4,6 +4,7 @@ import { Clock, MapPin, Car } from "lucide-react";
 import { UserLayout } from "../components/layouts/UserLayout";
 import { Button, Card } from "../components/ui-kit";
 import { useApp } from "../context/AppContext";
+import { CURRENCY } from "../lib/api";
 
 export const Route = createFileRoute("/summary")({
   head: () => ({ meta: [{ title: "Reservation Summary · ParkPilot" }, { name: "description", content: "Review your parking reservation before payment." }] }),
@@ -49,14 +50,14 @@ function Summary() {
               <div className="grid h-10 w-10 place-items-center rounded-xl bg-secondary"><Car className="h-5 w-5 text-primary" /></div>
               <div>
                 <p className="text-xs text-muted-foreground">Slot</p>
-                <p className="font-semibold">{draft.slot ?? "A-14"}</p>
+                <p className="font-semibold">{draft.slot ?? "—"}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <div className="grid h-10 w-10 place-items-center rounded-xl bg-secondary"><Clock className="h-5 w-5 text-primary" /></div>
               <div>
                 <p className="text-xs text-muted-foreground">Duration</p>
-                <p className="font-semibold">{draft.hours ?? 2} hours · Today, 3:00 PM start</p>
+                <p className="font-semibold">{draft.hours ?? 2} hours</p>
               </div>
             </div>
           </div>
@@ -65,10 +66,10 @@ function Summary() {
         <Card className="h-fit">
           <h2 className="font-semibold">Price Details</h2>
           <div className="mt-4 space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Parking fee</span><span>${total}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Service tax</span><span>${tax}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Platform fee</span><span>$2</span></div>
-            <div className="mt-2 flex justify-between border-t border-border pt-3 text-lg font-bold"><span>Total</span><span className="text-primary">${total + tax + 2}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Parking fee</span><span>{CURRENCY}{total}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Service tax</span><span>{CURRENCY}{tax}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Platform fee</span><span>{CURRENCY}2</span></div>
+            <div className="mt-2 flex justify-between border-t border-border pt-3 text-lg font-bold"><span>Total</span><span className="text-primary">{CURRENCY}{total + tax + 2}</span></div>
           </div>
           <Button className="mt-5 w-full" onClick={() => nav({ to: "/payment" })}>Continue to Payment</Button>
           <Link to="/search" className="mt-3 block text-center text-xs text-muted-foreground hover:underline">Cancel and search again</Link>
